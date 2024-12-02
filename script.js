@@ -175,3 +175,86 @@ const drawRuler = () => {
         createInterval(rulerContainer, position, `${interval.ratio} ${cents.toFixed(1)}¢`, true, color, lineLength);
     });
 };
+
+// Utility function to check if a number is prime
+const isPrime = (num) => {
+    if (num <= 1) return false;
+    if (num <= 3) return true;
+    if (num % 2 === 0 || num % 3 === 0) return false;
+    for (let i = 5; i * i <= num; i += 6) {
+        if (num % i === 0 || num % (i + 2) === 0) return false;
+    }
+    return true;
+};
+
+// Ensure only odd numbers can be entered into the odd limit input
+document.getElementById('oddLimitInput').setAttribute('step', '2');
+document.getElementById('oddLimitInput').addEventListener('input', function(event) {
+    let value = parseInt(event.target.value);
+    if (value % 2 === 0) {
+        value += 1; // Make it odd
+        event.target.value = value;
+    }
+});
+
+// Ensure the arrows of the odd limit input field only show odd numbers
+document.getElementById('oddLimitInput').addEventListener('keydown', function(event) {
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+        event.preventDefault();
+        let value = parseInt(event.target.value);
+        if (event.key === 'ArrowUp') {
+            value += 1;
+            if (value % 2 === 0) {
+                value += 1; // Make it odd
+            }
+        } else if (event.key === 'ArrowDown') {
+            value -= 1;
+            if (value % 2 === 0) {
+                value -= 1; // Make it odd
+            }
+        }
+        event.target.value = value;
+    }
+});
+
+// Ensure only prime numbers can be entered into the prime limit input
+document.getElementById('primeLimitInput').addEventListener('input', function(event) {
+    let value = parseInt(event.target.value);
+    const previousValue = parseInt(event.target.getAttribute('data-previous-value')) || value;
+
+    if (value > previousValue) {
+        // Increment case
+        while (!isPrime(value)) {
+            value += 1; // Increment until a prime number is found
+        }
+    } else {
+        // Decrement case
+        while (!isPrime(value) && value > 2) {
+            value -= 1; // Decrement until a prime number is found
+        }
+    }
+
+    event.target.value = value;
+    event.target.setAttribute('data-previous-value', value);
+});
+
+// Ensure the arrows of the prime limit input field only show prime numbers
+document.getElementById('primeLimitInput').addEventListener('keydown', function(event) {
+    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+        event.preventDefault();
+        let value = parseInt(event.target.value);
+        if (event.key === 'ArrowUp') {
+            value += 1;
+            while (!isPrime(value)) {
+                value += 1; // Increment until a prime number is found
+            }
+        } else if (event.key === 'ArrowDown') {
+            value -= 1;
+            while (!isPrime(value) && value > 2) {
+                value -= 1; // Decrement until a prime number is found
+            }
+        }
+        event.target.value = value;
+        event.target.setAttribute('data-previous-value', value);
+    }
+});
