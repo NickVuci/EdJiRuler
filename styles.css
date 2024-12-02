@@ -1,0 +1,48 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+#rulerContainer {
+    position: relative;
+    width: 300px;
+    margin: 40px auto;
+}
+
+#ruler {
+    position: absolute;
+    left: 150px; /* Centered in the container */
+    width: 0;
+    border-left: 2px solid black;
+}
+
+.interval {
+    position: absolute;
+    height: 1px;
+}
+
+/* EDO intervals */
+.interval.edo {
+    right: 150px; /* Start from the ruler and extend to the left */
+    width: 98px;
+    background-color: black;
+}
+
+/* JI intervals */
+.interval.ji {
+    left: 152px; /* Start from the ruler and extend to the right */
+    /* Width will be set dynamically based on prime limit */
+}
+
+.label {
+    position: absolute;
+    font-size: 12px;
+    transform: translateY(-50%);
+    text-align: center;
+    line-height: 1.2;
+}
+
+.label.ji, .label.edo {
+    position: absolute;
+    white-space: nowrap; /* Ensure the text does not wrap */
+    /* Add other styles as needed */
+}
