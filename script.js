@@ -21,10 +21,14 @@ import {
     JI_CLASS
 } from './constants.js';
 
-const getLineLengthForEDO = (index, totalEDOs) => {
+// Function to calculate line length for EDO intervals based on EDO values
+const getLineLengthForEDO = (edo, minEDO, maxEDO) => {
+    if (maxEDO === minEDO) {
+        return MAX_LINE_LENGTH;
+    }
     const lineLengthRange = MAX_LINE_LENGTH - MIN_LINE_LENGTH;
-    const lineLengthStep = totalEDOs > 1 ? lineLengthRange / (totalEDOs - 1) : 0;
-    return MAX_LINE_LENGTH - index * lineLengthStep;
+    const normalizedEDO = (maxEDO - edo) / (maxEDO - minEDO);
+    return MIN_LINE_LENGTH + normalizedEDO * lineLengthRange;
 };
 
 const createInterval = (
@@ -86,17 +90,24 @@ const drawRuler = () => {
     const ruler = document.getElementById('ruler');
     ruler.style.height = `${rulerHeight}px`;
 
-    const totalEDOs = edoValues.length;
-    const maxLightness = 70; // Lightest gray
-    const minLightness = 30; // Darkest gray
+    const minEDO = Math.min(...edoValues);
+    const maxEDO = Math.max(...edoValues);
+
+    const maxLightness = 60; // Lightest gray
+    const minLightness = 0; // Darkest gray
     const lightnessRange = maxLightness - minLightness;
 
-    edoValues.forEach((edo, index) => {
-        const lightnessStep = totalEDOs > 1 ? lightnessRange / (totalEDOs - 1) : 0;
-        const lightness = maxLightness - index * lightnessStep;
+    edoValues.forEach((edo) => {
+        // Normalize the EDO value between 0 and 1
+        const normalizedEDO = maxEDO !== minEDO
+            ? (maxEDO - edo) / (maxEDO - minEDO)
+            : 0; // If all EDOs are the same, use a middle value
+
+        // Calculate lightness based on the normalized EDO value
+        const lightness = minLightness + normalizedEDO * lightnessRange;
         const color = `hsl(0, 0%, ${lightness}%)`; // Shades of gray
 
-        const lineLength = getLineLengthForEDO(index, totalEDOs);
+        const lineLength = getLineLengthForEDO(edo, minEDO, maxEDO);
 
         for (let i = 0; i <= edo; i++) {
             const cents = i * (1200 / edo);
