@@ -1,15 +1,4 @@
-// Constants
-const primeColors = {
-    3: 'green',
-    5: 'blue',
-    7: 'orange',
-    11: 'purple',
-    13: 'brown',
-    17: 'pink',
-    19: 'cyan',
-    23: 'magenta',
-    // Add more primes and colors as needed
-};
+import { getColorForPrime } from './primeColors.js';
 
 // Utility Functions
 const getOddPart = (n) => {
@@ -47,8 +36,6 @@ const getMaxPrime = (num, den) => {
     return Math.max(...allPrimes);
 };
 
-const getColorForPrime = (prime) => primeColors[prime] || 'gray';
-
 const getLineLengthForPrime = (prime, primeLimit) => {
     const maxLineLength = 400; // Maximum line length in pixels
     const minLineLength = 25; // Minimum line length in pixels
@@ -58,12 +45,24 @@ const getLineLengthForPrime = (prime, primeLimit) => {
         return constantLineLength;
     }
 
-    const primes = Array.from(new Set(Object.keys(primeColors).map(Number)));
-    primes.push(primeLimit);
-    const uniquePrimes = [...new Set(primes)].sort((a, b) => a - b);
+    // Generate a list of primes up to the prime limit
+    const primes = [];
+    for (let i = 3; i <= primeLimit; i++) {
+        if (isPrime(i)) {
+            primes.push(i);
+        }
+    }
 
-    const primeIndex = uniquePrimes.indexOf(prime);
-    const totalPrimes = uniquePrimes.length;
+    // Ensure the prime is included in the list
+    if (!primes.includes(prime)) {
+        primes.push(prime);
+    }
+
+    // Sort the primes
+    primes.sort((a, b) => a - b);
+
+    const primeIndex = primes.indexOf(prime);
+    const totalPrimes = primes.length;
 
     // Invert the relationship: smaller primes get shorter lines, larger primes get longer lines
     return minLineLength + ((maxLineLength - minLineLength) * (primeIndex / (totalPrimes - 1)));
@@ -103,7 +102,7 @@ const createInterval = (container, position, labelContent, isJI = false, color =
     intervalLine.className = 'interval' + (isJI ? ' ji' : ' edo');
     intervalLine.style.top = position + 'px';
 
-    // Define constant length and color for intervals 1/1 and 1/2
+    // Define constant length and color for intervals 1/1 and 2/1
     const constantLineLength = 100; // Example constant length
     const constantColor = 'black'; // Example constant color
 
@@ -116,15 +115,11 @@ const createInterval = (container, position, labelContent, isJI = false, color =
     if (isJI) {
         intervalLine.style.backgroundColor = color;
         intervalLine.style.width = lineLength + 'px';
-    }
-
-    if (!isJI) {
-        // For EDO intervals, position line to extend to the left
-        intervalLine.style.right = '150px';
-        intervalLine.style.width = '50px'; // Adjust this value to make the EDO line shorter
+        intervalLine.style.left = '152px'; // For JI intervals, position line to extend to the right
     } else {
-        // For JI intervals, position line to extend to the right
-        intervalLine.style.left = '152px';
+        intervalLine.style.backgroundColor = 'black';
+        intervalLine.style.width = '50px'; // Adjust this value to make the EDO line shorter
+        intervalLine.style.right = '150px'; // For EDO intervals, position line to extend to the left
     }
 
     container.appendChild(intervalLine);
@@ -258,3 +253,5 @@ document.getElementById('primeLimitInput').addEventListener('keydown', function(
         event.target.setAttribute('data-previous-value', value);
     }
 });
+
+window.drawRuler = drawRuler;
