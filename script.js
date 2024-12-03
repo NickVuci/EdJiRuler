@@ -47,7 +47,7 @@ const getLineLengthForPrime = (prime, primeLimit) => {
 
     // Generate a list of primes up to the prime limit
     const primes = [];
-    for (let i = 3; i <= primeLimit; i++) {
+    for (let i = 2; i <= primeLimit; i++) {
         if (isPrime(i)) {
             primes.push(i);
         }

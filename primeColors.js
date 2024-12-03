@@ -20,6 +20,14 @@ const hashPrimeToColor = (prime) => {
         b = Math.floor(b * darkenFactor);
     }
 
+    // Ensure the color is not black or too dark
+    const darknessThreshold = 100; // Increased to prevent close to black
+    if (r < darknessThreshold && g < darknessThreshold && b < darknessThreshold) {
+        r = Math.max(r, darknessThreshold);
+        g = Math.max(g, darknessThreshold);
+        b = Math.max(b, darknessThreshold);
+    }
+
     return `rgb(${r}, ${g}, ${b})`;
 };
 
