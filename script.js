@@ -1,5 +1,17 @@
 import { getColorForPrime } from './primeColors.js';
 
+// Constants
+const MAX_LINE_LENGTH = 400; // Maximum line length in pixels
+const MIN_LINE_LENGTH = 25; // Minimum line length in pixels
+const CONSTANT_LINE_LENGTH = 100; // Constant line length for primes 1 and 2
+const JI_LINE_LEFT_POSITION = 152; // Left position for JI intervals
+const EDO_LINE_RIGHT_POSITION = 150; // Right position for EDO intervals
+const EDO_LABEL_RIGHT_OFFSET = 200; // Right offset for EDO labels
+const LABEL_PADDING = 5; // Padding for labels
+const DEFAULT_COLOR = 'black';
+const EDO_CLASS = 'edo';
+const JI_CLASS = 'ji';
+
 // Utility Functions
 const getOddPart = (n) => {
     while (n % 2 === 0 && n > 1) {
@@ -37,15 +49,10 @@ const getMaxPrime = (num, den) => {
 };
 
 const getLineLengthForPrime = (prime, primeLimit) => {
-    const maxLineLength = 400; // Maximum line length in pixels
-    const minLineLength = 25; // Minimum line length in pixels
-    const constantLineLength = 100; // Constant line length for primes 1 and 2
-
     if (prime === 1 || prime === 2) {
-        return constantLineLength;
+        return CONSTANT_LINE_LENGTH;
     }
 
-    // Generate a list of primes up to the prime limit
     const primes = [];
     for (let i = 2; i <= primeLimit; i++) {
         if (isPrime(i)) {
@@ -53,24 +60,21 @@ const getLineLengthForPrime = (prime, primeLimit) => {
         }
     }
 
-    // Ensure the prime is included in the list
     if (!primes.includes(prime)) {
         primes.push(prime);
     }
 
-    // Sort the primes
     primes.sort((a, b) => a - b);
 
     const primeIndex = primes.indexOf(prime);
     const totalPrimes = primes.length;
 
-    // Invert the relationship: smaller primes get shorter lines, larger primes get longer lines
-    return minLineLength + ((maxLineLength - minLineLength) * (primeIndex / (totalPrimes - 1)));
+    return MIN_LINE_LENGTH + ((MAX_LINE_LENGTH - MIN_LINE_LENGTH) * (primeIndex / (totalPrimes - 1)));
 };
 
 const generateJIIntervals = (primeLimit, oddLimit) => {
     const intervals = [];
-    const limit = oddLimit * 2; // To ensure ratios up to 2:1
+    const limit = oddLimit * 2;
     for (let numerator = 1; numerator <= limit; numerator++) {
         for (let denominator = 1; denominator <= limit; denominator++) {
             if (numerator >= denominator && gcd(numerator, denominator) === 1) {
@@ -92,51 +96,42 @@ const generateJIIntervals = (primeLimit, oddLimit) => {
             }
         }
     }
-    // Sort intervals by cents
     intervals.sort((a, b) => a.cents - b.cents);
     return intervals;
 };
 
-const createInterval = (container, position, labelContent, isJI = false, color = 'black', lineLength = 98) => {
+const createInterval = (container, position, labelContent, isJI = false, color = DEFAULT_COLOR, lineLength = 98) => {
     const intervalLine = document.createElement('div');
-    intervalLine.className = 'interval' + (isJI ? ' ji' : ' edo');
-    intervalLine.style.top = position + 'px';
+    intervalLine.className = 'interval' + (isJI ? ` ${JI_CLASS}` : ` ${EDO_CLASS}`);
+    intervalLine.style.top = `${position}px`;
 
-    // Define constant length and color for intervals 1/1 and 2/1
-    const constantLineLength = 100; // Example constant length
-    const constantColor = 'black'; // Example constant color
-
-    // Check if the interval is 1/1 or 1/2
     if (labelContent.startsWith('1/1') || labelContent.startsWith('2/1')) {
-        lineLength = constantLineLength;
-        color = constantColor;
+        lineLength = CONSTANT_LINE_LENGTH;
+        color = DEFAULT_COLOR;
     }
 
     if (isJI) {
         intervalLine.style.backgroundColor = color;
-        intervalLine.style.width = lineLength + 'px';
-        intervalLine.style.left = '152px'; // For JI intervals, position line to extend to the right
+        intervalLine.style.width = `${lineLength}px`;
+        intervalLine.style.left = `${JI_LINE_LEFT_POSITION}px`;
     } else {
-        intervalLine.style.backgroundColor = 'black';
-        intervalLine.style.width = '50px'; // Adjust this value to make the EDO line shorter
-        intervalLine.style.right = '150px'; // For EDO intervals, position line to extend to the left
+        intervalLine.style.backgroundColor = DEFAULT_COLOR;
+        intervalLine.style.width = '50px';
+        intervalLine.style.right = `${EDO_LINE_RIGHT_POSITION}px`;
     }
 
     container.appendChild(intervalLine);
 
     const intervalLabel = document.createElement('div');
-    intervalLabel.className = 'label' + (isJI ? ' ji' : ' edo');
-    intervalLabel.style.top = position + 'px';
+    intervalLabel.className = 'label' + (isJI ? ` ${JI_CLASS}` : ` ${EDO_CLASS}`);
+    intervalLabel.style.top = `${position}px`;
     intervalLabel.innerHTML = labelContent;
 
     if (isJI) {
         intervalLabel.style.color = color;
-        // Position label at the end of the line
-        const labelLeftPosition = 152 + lineLength + 5; // 5px padding
-        intervalLabel.style.left = labelLeftPosition + 'px';
+        intervalLabel.style.left = `${JI_LINE_LEFT_POSITION + lineLength + LABEL_PADDING}px`;
     } else {
-        // For EDO labels, position to the left of the line
-        intervalLabel.style.right = '200px'; // Adjust as needed
+        intervalLabel.style.right = `${EDO_LABEL_RIGHT_OFFSET}px`;
         intervalLabel.style.textAlign = 'right';
     }
 
@@ -149,18 +144,16 @@ const drawRuler = () => {
     const oddLimit = parseInt(document.getElementById('oddLimitInput').value);
     const rulerHeight = parseInt(document.getElementById('rulerHeightInput').value);
     const rulerContainer = document.getElementById('rulerContainer');
-    rulerContainer.innerHTML = '<div id="ruler"></div>'; // Reset ruler
+    rulerContainer.innerHTML = '<div id="ruler"></div>';
     const ruler = document.getElementById('ruler');
-    ruler.style.height = rulerHeight + 'px';
+    ruler.style.height = `${rulerHeight}px`;
 
-    // Draw EDO intervals, including 0 and edo
     for (let i = 0; i <= edo; i++) {
         const cents = i * (1200 / edo);
         const position = (cents / 1200) * ruler.offsetHeight;
         createInterval(rulerContainer, position, `${i}\\${edo} ${cents.toFixed(1)}¢`, false);
     }
 
-    // Draw JI intervals
     const intervals = generateJIIntervals(primeLimit, oddLimit);
     intervals.forEach(interval => {
         const cents = interval.cents;
@@ -182,77 +175,47 @@ const isPrime = (num) => {
     return true;
 };
 
-// Ensure only odd numbers can be entered into the odd limit input
-document.getElementById('oddLimitInput').setAttribute('step', '2');
-document.getElementById('oddLimitInput').addEventListener('input', function(event) {
-    let value = parseInt(event.target.value);
-    if (value % 2 === 0) {
-        value += 1; // Make it odd
-        event.target.value = value;
-    }
-});
-
-// Ensure the arrows of the odd limit input field only show odd numbers
-document.getElementById('oddLimitInput').addEventListener('keydown', function(event) {
-    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-        event.preventDefault();
+// Generic function to set up input validation and keydown handlers
+const setupInputField = (inputId, validateFn, step = 1) => {
+    const input = document.getElementById(inputId);
+    input.setAttribute('step', step);
+    input.addEventListener('input', function(event) {
         let value = parseInt(event.target.value);
-        if (event.key === 'ArrowUp') {
-            value += 1;
-            if (value % 2 === 0) {
-                value += 1; // Make it odd
-            }
-        } else if (event.key === 'ArrowDown') {
-            value -= 1;
-            if (value % 2 === 0) {
-                value -= 1; // Make it odd
-            }
+        const previousValue = parseInt(event.target.getAttribute('data-previous-value')) || value;
+        const newValue = validateFn(value, previousValue);
+        event.target.value = newValue;
+        event.target.setAttribute('data-previous-value', newValue);
+    });
+
+    input.addEventListener('keydown', function(event) {
+        if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+            event.preventDefault();
+            let value = parseInt(event.target.value);
+            value = event.key === 'ArrowUp' ? value + step : value - step;
+            value = validateFn(value, value - step);
+            event.target.value = value;
+            event.target.setAttribute('data-previous-value', value);
         }
-        event.target.value = value;
-    }
-});
+    });
+};
 
-// Ensure only prime numbers can be entered into the prime limit input
-document.getElementById('primeLimitInput').addEventListener('input', function(event) {
-    let value = parseInt(event.target.value);
-    const previousValue = parseInt(event.target.getAttribute('data-previous-value')) || value;
+// Validation functions
+const validateOddLimit = (value) => {
+    return value % 2 === 0 ? value + 1 : value;
+};
 
+const validatePrimeLimit = (value, previousValue) => {
     if (value > previousValue) {
-        // Increment case
-        while (!isPrime(value)) {
-            value += 1; // Increment until a prime number is found
-        }
+        while (!isPrime(value)) value += 1;
     } else {
-        // Decrement case
-        while (!isPrime(value) && value > 2) {
-            value -= 1; // Decrement until a prime number is found
-        }
+        while (!isPrime(value) && value > 2) value -= 1;
     }
+    return value;
+};
 
-    event.target.value = value;
-    event.target.setAttribute('data-previous-value', value);
-});
-
-// Ensure the arrows of the prime limit input field only show prime numbers
-document.getElementById('primeLimitInput').addEventListener('keydown', function(event) {
-    if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-        event.preventDefault();
-        let value = parseInt(event.target.value);
-        if (event.key === 'ArrowUp') {
-            value += 1;
-            while (!isPrime(value)) {
-                value += 1; // Increment until a prime number is found
-            }
-        } else if (event.key === 'ArrowDown') {
-            value -= 1;
-            while (!isPrime(value) && value > 2) {
-                value -= 1; // Decrement until a prime number is found
-            }
-        }
-        event.target.value = value;
-        event.target.setAttribute('data-previous-value', value);
-    }
-});
+// Setup input fields using the generic function
+setupInputField('oddLimitInput', validateOddLimit, 2);
+setupInputField('primeLimitInput', validatePrimeLimit);
 
 window.drawRuler = drawRuler;
 
