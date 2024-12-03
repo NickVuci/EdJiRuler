@@ -21,9 +21,16 @@ import {
     JI_CLASS
 } from './constants.js';
 
-const createInterval = (container, position, labelContent, isJI = false, color = DEFAULT_COLOR, lineLength = 98) => {
+const createInterval = (
+    container,
+    position,
+    labelContent,
+    isJI = false,
+    color = DEFAULT_COLOR,
+    lineLength = 98
+) => {
     const intervalLine = document.createElement('div');
-    intervalLine.className = 'interval' + (isJI ? ` ${JI_CLASS}` : ` ${EDO_CLASS}`);
+    intervalLine.className = `interval ${isJI ? JI_CLASS : EDO_CLASS}`;
     intervalLine.style.top = `${position}px`;
 
     if (labelContent.startsWith('1/1') || labelContent.startsWith('2/1')) {
@@ -44,7 +51,7 @@ const createInterval = (container, position, labelContent, isJI = false, color =
     container.appendChild(intervalLine);
 
     const intervalLabel = document.createElement('div');
-    intervalLabel.className = 'label' + (isJI ? ` ${JI_CLASS}` : ` ${EDO_CLASS}`);
+    intervalLabel.className = `label ${isJI ? JI_CLASS : EDO_CLASS}`;
     intervalLabel.style.top = `${position}px`;
     intervalLabel.innerHTML = labelContent;
 
