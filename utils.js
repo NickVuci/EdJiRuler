@@ -33,14 +33,17 @@ export const gcd = (a, b) => {
     return a;
 };
 
+const primeCache = {};
+
 export const isPrime = (num) => {
-    if (num <= 1) return false;
-    if (num <= 3) return true;
-    if (num % 2 === 0 || num % 3 === 0) return false;
+    if (num in primeCache) return primeCache[num];
+    if (num <= 1) return (primeCache[num] = false);
+    if (num <= 3) return (primeCache[num] = true);
+    if (num % 2 === 0 || num % 3 === 0) return (primeCache[num] = false);
     for (let i = 5; i * i <= num; i += 6) {
-        if (num % i === 0 || num % (i + 2) === 0) return false;
+        if (num % i === 0 || num % (i + 2) === 0) return (primeCache[num] = false);
     }
-    return true;
+    return (primeCache[num] = true);
 };
 
 export const getMaxPrime = (num, den) => {
