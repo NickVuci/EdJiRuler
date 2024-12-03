@@ -255,3 +255,6 @@ document.getElementById('primeLimitInput').addEventListener('keydown', function(
 });
 
 window.drawRuler = drawRuler;
+
+// Call drawRuler when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', drawRuler);
