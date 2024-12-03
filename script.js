@@ -1,104 +1,25 @@
 import { getColorForPrime } from './primeColors.js';
-
-// Constants
-const MAX_LINE_LENGTH = 400; // Maximum line length in pixels
-const MIN_LINE_LENGTH = 25; // Minimum line length in pixels
-const CONSTANT_LINE_LENGTH = 100; // Constant line length for primes 1 and 2
-const JI_LINE_LEFT_POSITION = 152; // Left position for JI intervals
-const EDO_LINE_RIGHT_POSITION = 150; // Right position for EDO intervals
-const EDO_LABEL_RIGHT_OFFSET = 200; // Right offset for EDO labels
-const LABEL_PADDING = 5; // Padding for labels
-const DEFAULT_COLOR = 'black';
-const EDO_CLASS = 'edo';
-const JI_CLASS = 'ji';
-
-// Utility Functions
-const getOddPart = (n) => {
-    while (n % 2 === 0 && n > 1) {
-        n = n / 2;
-    }
-    return n;
-};
-
-const primeFactors = (n) => {
-    const factors = [];
-    let divisor = 2;
-    while (n >= 2) {
-        if (n % divisor === 0) {
-            factors.push(divisor);
-            n = n / divisor;
-        } else {
-            divisor++;
-        }
-    }
-    return factors;
-};
-
-const gcd = (a, b) => {
-    while (b !== 0) {
-        [a, b] = [b, a % b];
-    }
-    return a;
-};
-
-const getMaxPrime = (num, den) => {
-    const numFactors = primeFactors(num);
-    const denFactors = primeFactors(den);
-    const allPrimes = new Set([...numFactors, ...denFactors]);
-    return Math.max(...allPrimes);
-};
-
-const getLineLengthForPrime = (prime, primeLimit) => {
-    if (prime === 1 || prime === 2) {
-        return CONSTANT_LINE_LENGTH;
-    }
-
-    const primes = [];
-    for (let i = 2; i <= primeLimit; i++) {
-        if (isPrime(i)) {
-            primes.push(i);
-        }
-    }
-
-    if (!primes.includes(prime)) {
-        primes.push(prime);
-    }
-
-    primes.sort((a, b) => a - b);
-
-    const primeIndex = primes.indexOf(prime);
-    const totalPrimes = primes.length;
-
-    return MIN_LINE_LENGTH + ((MAX_LINE_LENGTH - MIN_LINE_LENGTH) * (primeIndex / (totalPrimes - 1)));
-};
-
-const generateJIIntervals = (primeLimit, oddLimit) => {
-    const intervals = [];
-    const limit = oddLimit * 2;
-    for (let numerator = 1; numerator <= limit; numerator++) {
-        for (let denominator = 1; denominator <= limit; denominator++) {
-            if (numerator >= denominator && gcd(numerator, denominator) === 1) {
-                const ratioValue = numerator / denominator;
-                if (ratioValue <= 2) {
-                    const maxPrime = getMaxPrime(numerator, denominator);
-                    const oddNum = getOddPart(numerator);
-                    const oddDen = getOddPart(denominator);
-                    const maxOddPart = Math.max(oddNum, oddDen);
-                    if (maxPrime <= primeLimit && maxOddPart <= oddLimit) {
-                        const cents = 1200 * Math.log2(ratioValue);
-                        intervals.push({
-                            ratio: `${numerator}/${denominator}`,
-                            cents: cents,
-                            maxPrime: maxPrime
-                        });
-                    }
-                }
-            }
-        }
-    }
-    intervals.sort((a, b) => a.cents - b.cents);
-    return intervals;
-};
+import {
+    getOddPart,
+    primeFactors,
+    gcd,
+    isPrime,
+    getMaxPrime,
+    getLineLengthForPrime,
+    generateJIIntervals
+} from './utils.js';
+import {
+    MAX_LINE_LENGTH,
+    MIN_LINE_LENGTH,
+    CONSTANT_LINE_LENGTH,
+    DEFAULT_COLOR, 
+    JI_LINE_LEFT_POSITION,
+    EDO_LINE_RIGHT_POSITION,
+    EDO_LABEL_RIGHT_OFFSET,
+    LABEL_PADDING,
+    EDO_CLASS,
+    JI_CLASS
+} from './constants.js';
 
 const createInterval = (container, position, labelContent, isJI = false, color = DEFAULT_COLOR, lineLength = 98) => {
     const intervalLine = document.createElement('div');
@@ -162,17 +83,6 @@ const drawRuler = () => {
         const lineLength = getLineLengthForPrime(interval.maxPrime, primeLimit);
         createInterval(rulerContainer, position, `${interval.ratio} ${cents.toFixed(1)}¢`, true, color, lineLength);
     });
-};
-
-// Utility function to check if a number is prime
-const isPrime = (num) => {
-    if (num <= 1) return false;
-    if (num <= 3) return true;
-    if (num % 2 === 0 || num % 3 === 0) return false;
-    for (let i = 5; i * i <= num; i += 6) {
-        if (num % i === 0 || num % (i + 2) === 0) return false;
-    }
-    return true;
 };
 
 // Generic function to set up input validation and keydown handlers
