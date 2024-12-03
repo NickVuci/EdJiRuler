@@ -21,13 +21,19 @@ import {
     JI_CLASS
 } from './constants.js';
 
+const getLineLengthForEDO = (index, totalEDOs) => {
+    const lineLengthRange = MAX_LINE_LENGTH - MIN_LINE_LENGTH;
+    const lineLengthStep = totalEDOs > 1 ? lineLengthRange / (totalEDOs - 1) : 0;
+    return MAX_LINE_LENGTH - index * lineLengthStep;
+};
+
 const createInterval = (
     container,
     position,
     labelContent,
     isJI = false,
     color = DEFAULT_COLOR,
-    lineLength = 98
+    lineLength = MAX_LINE_LENGTH
 ) => {
     const intervalLine = document.createElement('div');
     intervalLine.className = `interval ${isJI ? JI_CLASS : EDO_CLASS}`;
@@ -43,8 +49,8 @@ const createInterval = (
         intervalLine.style.width = `${lineLength}px`;
         intervalLine.style.left = `${JI_LINE_LEFT_POSITION}px`;
     } else {
-        intervalLine.style.backgroundColor = DEFAULT_COLOR;
-        intervalLine.style.width = '50px';
+        intervalLine.style.backgroundColor = color;
+        intervalLine.style.width = `${lineLength}px`;
         intervalLine.style.right = `${EDO_LINE_RIGHT_POSITION}px`;
     }
 
@@ -59,7 +65,9 @@ const createInterval = (
         intervalLabel.style.color = color;
         intervalLabel.style.left = `${JI_LINE_LEFT_POSITION + lineLength + LABEL_PADDING}px`;
     } else {
-        intervalLabel.style.right = `${EDO_LABEL_RIGHT_OFFSET}px`;
+        intervalLabel.style.color = color;
+        const labelRightPosition = EDO_LINE_RIGHT_POSITION + lineLength + LABEL_PADDING;
+        intervalLabel.style.right = `${labelRightPosition}px`;
         intervalLabel.style.textAlign = 'right';
     }
 
@@ -67,20 +75,42 @@ const createInterval = (
 };
 
 const drawRuler = () => {
-    const edo = parseInt(document.getElementById('edoInput').value);
+    const edoInput = document.getElementById('edoInput').value;
+    const edoValues = edoInput.split(',').map(s => parseInt(s.trim())).filter(Number.isInteger);
     const primeLimit = parseInt(document.getElementById('primeLimitInput').value);
     const oddLimit = parseInt(document.getElementById('oddLimitInput').value);
     const rulerHeight = parseInt(document.getElementById('rulerHeightInput').value);
+
     const rulerContainer = document.getElementById('rulerContainer');
     rulerContainer.innerHTML = '<div id="ruler"></div>';
     const ruler = document.getElementById('ruler');
     ruler.style.height = `${rulerHeight}px`;
 
-    for (let i = 0; i <= edo; i++) {
-        const cents = i * (1200 / edo);
-        const position = (cents / 1200) * ruler.offsetHeight;
-        createInterval(rulerContainer, position, `${i}\\${edo} ${cents.toFixed(1)}¢`, false);
-    }
+    const totalEDOs = edoValues.length;
+    const maxLightness = 70; // Lightest gray
+    const minLightness = 30; // Darkest gray
+    const lightnessRange = maxLightness - minLightness;
+
+    edoValues.forEach((edo, index) => {
+        const lightnessStep = totalEDOs > 1 ? lightnessRange / (totalEDOs - 1) : 0;
+        const lightness = maxLightness - index * lightnessStep;
+        const color = `hsl(0, 0%, ${lightness}%)`; // Shades of gray
+
+        const lineLength = getLineLengthForEDO(index, totalEDOs);
+
+        for (let i = 0; i <= edo; i++) {
+            const cents = i * (1200 / edo);
+            const position = (cents / 1200) * ruler.offsetHeight;
+            createInterval(
+                rulerContainer,
+                position,
+                `${i}\\${edo} ${cents.toFixed(1)}¢`,
+                false,
+                color,
+                lineLength
+            );
+        }
+    });
 
     const intervals = generateJIIntervals(primeLimit, oddLimit);
     intervals.forEach(interval => {
@@ -88,7 +118,14 @@ const drawRuler = () => {
         const position = (cents / 1200) * ruler.offsetHeight;
         const color = getColorForPrime(interval.maxPrime);
         const lineLength = getLineLengthForPrime(interval.maxPrime, primeLimit);
-        createInterval(rulerContainer, position, `${interval.ratio} ${cents.toFixed(1)}¢`, true, color, lineLength);
+        createInterval(
+            rulerContainer,
+            position,
+            `${interval.ratio} ${cents.toFixed(1)}¢`,
+            true,
+            color,
+            lineLength
+        );
     });
 };
 
