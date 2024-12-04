@@ -2,6 +2,10 @@ body {
     font-family: Arial, sans-serif;
 }
 
+h1 {
+    text-align: center;
+}
+
 #rulerContainer {
     position: relative;
     width: 300px;
@@ -44,4 +48,29 @@ body {
     position: absolute;
     white-space: nowrap; /* Ensure the text does not wrap */
     /* Add other styles as needed */
+}
+
+input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    box-sizing: border-box;
+}
+
+.input-group {
+    display: flex;
+    justify-content: space-between;
+}
+
+.input-group > div {
+    flex: 1;
+    margin-right: 10px;
+}
+
+.input-group > div:last-child {
+    margin-right: 0;
+}
+
+.input-group input[type="number"] {
+    width: calc(50% - 5px);
 }
