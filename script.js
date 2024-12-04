@@ -22,13 +22,17 @@ import {
 } from './constants.js';
 
 // Function to calculate line length for EDO intervals based on EDO values
-const getLineLengthForEDO = (edo, minEDO, maxEDO) => {
-    if (maxEDO === minEDO) {
+const getLineLengthForEDO = (edo, edoValues) => {
+    const sortedEdos = [...edoValues].sort((a, b) => a - b);
+    const index = sortedEdos.indexOf(edo);
+    const totalEdos = sortedEdos.length;
+
+    if (totalEdos === 1) {
         return MAX_LINE_LENGTH;
     }
-    const lineLengthRange = MAX_LINE_LENGTH - MIN_LINE_LENGTH;
-    const normalizedEDO = (maxEDO - edo) / (maxEDO - minEDO);
-    return MIN_LINE_LENGTH + normalizedEDO * lineLengthRange;
+
+    const fraction = (totalEdos - index) / totalEdos;
+    return MAX_LINE_LENGTH * fraction;
 };
 
 const createInterval = (
@@ -107,8 +111,7 @@ const drawRuler = () => {
         const lightness = minLightness + normalizedEDO * lightnessRange;
         const color = `hsl(0, 0%, ${lightness}%)`; // Shades of gray
 
-        const lineLength = getLineLengthForEDO(edo, minEDO, maxEDO);
-
+        const lineLength = getLineLengthForEDO(edo, edoValues);
         for (let i = 0; i <= edo; i++) {
             const cents = i * (1200 / edo);
             const position = (cents / 1200) * ruler.offsetHeight;

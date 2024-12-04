@@ -23,7 +23,6 @@ body {
 /* EDO intervals */
 .interval.edo {
     right: 150px; /* Start from the ruler and extend to the left */
-    width: 98px;
     background-color: black;
 }
 
